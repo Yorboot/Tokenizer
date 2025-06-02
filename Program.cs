@@ -64,64 +64,65 @@ public class Tokenizer
             {
                 type = TokenTypes.Keyword;
                 tokens.Add(new Token(type,value));
+                continue;
             }
 
             if (Identifiers.Contains(value))
             {
                 type = TokenTypes.Identifier;
                 tokens.Add(new Token(type,value));
+                continue;
             }
 
             if (PublicityIndentifiers.Contains(value))
             {
                 type = TokenTypes.PublicityIdentifiers;
                 tokens.Add(new Token(type,value));
+                continue;
             }
-            else
+            switch (value)
             {
-                switch (value)
-                {
-                    case var v when Regex.IsMatch(v, @"^[+\-*/=<>]$"):
-                        type = TokenTypes.Operator;
-                        break;
+                case var v when Regex.IsMatch(v, @"^[+\-*/=<>]$"):
+                    type = TokenTypes.Operator;
+                    break;
 
-                    case var v when Regex.IsMatch(v, @"^[""'].*[""']$"):
-                        type = TokenTypes.String;
-                        break;
+                case var v when Regex.IsMatch(v, @"^[""'].*[""']$"):
+                    type = TokenTypes.String;
+                    break;
 
-                    case var v when Regex.IsMatch(v, @"^//.*$"):
-                        type = TokenTypes.Comment;
-                        break;
+                case var v when Regex.IsMatch(v, @"^//.*$"):
+                    type = TokenTypes.Comment;
+                    break;
 
-                    case var v when Regex.IsMatch(v, @"^\s+$"):
-                        type = TokenTypes.Whitespace;
-                        break;
+                case var v when Regex.IsMatch(v, @"^\s+$"):
+                    type = TokenTypes.Whitespace;
+                    break;
 
-                    case var v when Regex.IsMatch(v, @"(\b\d+\b)"):
-                        type = TokenTypes.Integers;
-                        break;
-                    case var v when Regex.IsMatch(v, @":decimal|double"):
-                        type = TokenTypes.Floats;
-                        break;
-                    case var v when Regex.IsMatch(v, @":true|false"):
-                        type = TokenTypes.Boolean;
-                        break;
-                    case var v when Regex.IsMatch(v, @"\b function\s+get[A-Z]\w*\s*\("):
-                        type = TokenTypes.Getter;
-                        break;
+                case var v when Regex.IsMatch(v, @"(\b\d+\b)"):
+                    type = TokenTypes.Integers;
+                    break;
+                case var v when Regex.IsMatch(v, @":decimal|double"):
+                    type = TokenTypes.Floats;
+                    break;
+                case var v when Regex.IsMatch(v, @":true|false"):
+                    type = TokenTypes.Boolean;
+                    break;
+                case var v when Regex.IsMatch(v, @"\b function\s+get[A-Z]\w*\s*\("):
+                    type = TokenTypes.Getter;
+                    break;
 
-                    case var v when Regex.IsMatch(v, @"\b function\s+set[A-Z]\w*\s*\("):
-                        type = TokenTypes.Setter;
-                        break;
-                    default:
-                        type = TokenTypes.Unknown;
-                        break;
-                }
-                tokens.Add(new Token(type,value));
+                case var v when Regex.IsMatch(v, @"\b function\s+set[A-Z]\w*\s*\("):
+                    type = TokenTypes.Setter;
+                    break;
+                default:
+                    type = TokenTypes.Unknown;
+                    break;
             }
+            tokens.Add(new Token(type,value));
         }
+    
 
-        return tokens;
+    return tokens;
     }
         
 }
@@ -132,49 +133,18 @@ class Program
         var tokenizer = new Tokenizer();
         string code = "case if else switch private public internal class";
         List<Token> tokens = tokenizer.Tokenize(code);
-        List<TokenTypes> keywords = new List<TokenTypes>();
-        List<TokenTypes> identifiers = new List<TokenTypes>();
-        List<TokenTypes> publicityIdentifiers = new List<TokenTypes>();
-        foreach (var token in tokens)
+        foreach( Token token in tokens)
         {
-            switch (token.TokenType)
-            {
-                case TokenTypes.Identifier:
-                    identifiers.Add(token.TokenType);
-                    break;
-                case TokenTypes.Keyword:
-                    keywords.Add(token.TokenType);
-                    break;
-                case TokenTypes.PublicityIdentifiers:
-                    publicityIdentifiers.Add(token.TokenType);
-                    break;
-            }
-            // Console.WriteLine($"[{token.TokenType}] {token.Value}");
+            Console.WriteLine(token.TokenType+ " value: "+token.Value);
         }
-        
-        foreach (var tokenType in keywords)
+        List<TokenTypes> types = new List<TokenTypes>();
+        List<string> codeList = new List<string>();
+        foreach (Token token in tokens)
         {
-            Console.WriteLine(tokenType);
+            types.Add(token.TokenType);
+            codeList.Add(token.Value);
         }
-
-        foreach (var token in identifiers)
-        {
-            Console.WriteLine(token);
-        }
-
-        foreach (var tokenType in publicityIdentifiers)
-        {
-            Console.WriteLine(tokenType);
-        }
-
-        List<List<TokenTypes>> list = new List<List<TokenTypes>>
-        {
-            keywords,
-            identifiers,
-            publicityIdentifiers
-        };
-        List<string> Code = new List<string>(code.Split(' ')) ;
-        Json.WriteJson(list,Code);
+        Json.WriteJson(types, codeList);
     }
 }
     
