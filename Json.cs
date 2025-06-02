@@ -11,11 +11,9 @@ public class Json
     public static List<List<string>> ReadLanguageData()
     {
         string jsonString = GetJsonFile();
-        // Parse JSON
         using var doc = JsonDocument.Parse(jsonString);
         var root = doc.RootElement;
 
-        // Extract each list individually
 
         foreach (var item in root.GetProperty("keywords").EnumerateArray())
         {
@@ -50,29 +48,30 @@ public class Json
         }
         catch (Exception e)
         {
+            File.CreateText(@"./c#.json");
             Console.WriteLine(e);
             throw;
         }
     }
 
-    public static void WriteJson(List<List<TokenTypes>> tokenTypes, List<string> code)
+    public static void WriteJson(List<TokenTypes> tokenTypes, List<string> code)
     {
-        List<List<string>> json = new List<List<string>>();
-        foreach (var list in tokenTypes)
+        Dictionary<string, string> tokenTypesDictionary = new Dictionary<string, string>();
+        for (int i = 0; i < Math.Min(tokenTypes.Count, code.Count); i++)
         {
-            List<string> temp = new List<string>();
-            foreach (var tokenType in list)
+            string key = tokenTypes[i].ToString();
+            string value = code[i];
+            int counter = 1;
+            string originalKey = key;
+            while (tokenTypesDictionary.ContainsKey(key))
             {
-                temp.Add(tokenType.ToString());
+                key = $"{originalKey}_{counter}";
+                counter++;
             }
-            json.Add(temp);
+            tokenTypesDictionary[key] = value;
+            
         }
-        var data = new
-        {
-            Tokens = json,
-            Code = code
-        };
-        string jsonString = JsonSerializer.Serialize(data);
+        string jsonString = JsonSerializer.Serialize(tokenTypesDictionary, new JsonSerializerOptions() { WriteIndented = true });
         File.WriteAllText(@"./data.json", jsonString);
         Console.WriteLine("Sucessfuly writed to json");
     }
